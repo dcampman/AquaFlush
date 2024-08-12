@@ -1,0 +1,22 @@
+{
+  "valves": [
+    {
+      "id": "valve1",
+      "name": "Engine 1",
+      "mode": "latching",
+      "duration": 300
+    },
+    {
+      "id": "valve2",
+      "name": "Engine 2",
+      "mode": "momentary",
+      "duration": 120
+    },
+    {
+      "id": "valve3",
+      "name": "Engine 3",
+      "mode": "latching",
+      "duration": 180
+    }
+  ]
+}
