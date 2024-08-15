@@ -3,7 +3,7 @@ import {TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RootStackParamList} from '../navigation/RootStack';
+import {RootStackParamList} from './RootStack';
 
 const HeaderMenu = () => {
   const navigation =

@@ -1,24 +1,15 @@
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, Alert, Text, Switch} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DeviceListComponent from '../components/DeviceListComponent';
-import AddDeviceComponent from '../components/AddDeviceComponent';
-import {
-  BleManager,
-  Device,
-  Service,
-  Characteristic,
-  Subscription,
-  Descriptor,
-  BleError,
-} from 'react-native-ble-plx';
-import {setupMockBLE, mockBLEDevice} from '../utils/ble/setupMockBLE';
+import DeviceListComponent from '../components/Device/DeviceListComponent';
+import AddDeviceComponent from '../components/Device/AddDeviceComponent';
+import {BleManager, Device} from 'react-native-ble-plx';
+import {DEBUG_MODE} from '../utils/config/debugConfig';
 
 const bleManager = new BleManager();
 
 const SettingsScreen = () => {
   const [devices, setDevices] = useState<Device[]>([]);
-  const [isAdminMode, setIsAdminMode] = useState(false);
   const [isDebugMode, setIsDebugMode] = useState(false);
 
   useEffect(() => {
@@ -27,11 +18,13 @@ const SettingsScreen = () => {
       bleManager.stopDeviceScan();
       bleManager.destroy();
     };
-  }, []);
+  });
 
   const loadSavedDevices = async () => {
     try {
-      const savedDevices = await AsyncStorage.getItem('connectedDevices');
+      const savedDevices = await AsyncStorage.getItem(
+        'previousConnectedDevices',
+      );
       if (savedDevices) {
         setDevices(JSON.parse(savedDevices));
       }
@@ -45,7 +38,7 @@ const SettingsScreen = () => {
       const newDevices = [...devices, device];
       setDevices(newDevices);
       await AsyncStorage.setItem(
-        'connectedDevices',
+        'previousConnectedDevices',
         JSON.stringify(newDevices),
       );
     } catch (error) {
@@ -53,12 +46,12 @@ const SettingsScreen = () => {
     }
   };
 
-  const removeDevice = async (deviceId: string) => {
+  const removeDevice = async (device: Device) => {
     try {
-      const newDevices = devices.filter(device => device.id !== deviceId);
+      const newDevices = devices.filter(d => d.id !== device.id); // Use the device.id to filter
       setDevices(newDevices);
       await AsyncStorage.setItem(
-        'connectedDevices',
+        'previousConnectedDevices',
         JSON.stringify(newDevices),
       );
     } catch (error) {
@@ -67,15 +60,11 @@ const SettingsScreen = () => {
   };
 
   const connectToDevice = async (device: Device) => {
-    if (isDebugMode) {
-      console.log(`Simulating connection to ${device.name}`);
-      Alert.alert('Debug Mode', `Simulating connection to ${device.name}`);
-      return;
-    }
-
     try {
       console.log(`Attempting to connect to device: ${device.name}`);
-      bleManager.stopDeviceScan();
+      if (!DEBUG_MODE) {
+        bleManager.stopDeviceScan();
+      }
 
       const connectedDevice = await device.connect();
       console.log(`Connected to device: ${connectedDevice.name}`);
@@ -83,6 +72,7 @@ const SettingsScreen = () => {
       await connectedDevice.discoverAllServicesAndCharacteristics();
       console.log(`Discovered services for device: ${connectedDevice.name}`);
 
+      saveDevice(connectedDevice); // Save the device after connection
       Alert.alert('Connected', `Connected to ${connectedDevice.name}`);
     } catch (error) {
       console.error('Connection Error:', error);
@@ -92,7 +82,6 @@ const SettingsScreen = () => {
 
   const disconnectFromDevice = async (device: Device) => {
     try {
-      console.log(`Simulating disconnection from ${device.name}`);
       await device.cancelConnection();
       Alert.alert('Disconnected', `Disconnected from ${device.name}`);
     } catch (error) {
@@ -102,127 +91,21 @@ const SettingsScreen = () => {
 
   const addNewDevice = () => {
     if (isDebugMode) {
-      // Use mock BLE to simulate adding a device
-      setupMockBLE();
-      let baseName = 'Mock AquaFlush Device';
-      let mockDeviceName = baseName;
-      let suffix = 1;
-
-      while (devices.some(device => device.name === mockDeviceName)) {
-        suffix++;
-        mockDeviceName = `${baseName}-${suffix}`;
-      }
-
-      const mockDevice: Device = {
-        id: `mock-device-id-${suffix}`,
-        name: mockDeviceName,
-        rssi: null,
-        mtu: 0,
-        manufacturerData: null,
-        rawScanRecord: '',
-        serviceData: null,
-        serviceUUIDs: null,
-        localName: null,
-        txPowerLevel: null,
-        solicitedServiceUUIDs: null,
-        isConnectable: null,
-        overflowServiceUUIDs: null,
-        connect: async function (): Promise<Device> {
-          console.log(`Simulating connection to ${this.name}`);
-          return this; // Simulate a successful connection
-        },
-        cancelConnection: async function (): Promise<Device> {
-          console.log(`Simulating disconnection from ${this.name}`);
-          return this; // Simulate a successful disconnection
-        },
-        isConnected: async function (): Promise<boolean> {
-          return true; // Mock return value indicating the device is connected
-        },
-        onDisconnected: function (
-          listener: (error: BleError | null, device: Device) => void,
-        ): Subscription {
-          return {
-            remove: () => {},
-          }; // Mock subscription removal
-        },
-        discoverAllServicesAndCharacteristics:
-          async function (): Promise<Device> {
-            return this; // Mock return value for discovering services and characteristics
-          },
-        services: async function (): Promise<Service[]> {
-          return []; // Mock return value for services
-        },
-        characteristicsForService: async function (): Promise<
-          Characteristic[]
-        > {
-          return []; // Mock return value for characteristics
-        },
-        readRSSI: async function (): Promise<Device> {
-          return this; // Mock return value for RSSI
-        },
-        requestMTU: async function (): Promise<Device> {
-          return this; // Mock return value for MTU request
-        },
-        requestConnectionPriority: async function (): Promise<Device> {
-          return this; // Mock return value for connection priority request
-        },
-        monitorCharacteristicForService: function (): Subscription {
-          return {
-            remove: () => {},
-          }; // Mock subscription removal
-        },
-        readCharacteristicForService:
-          async function (): Promise<Characteristic> {
-            return {} as Characteristic; // Mock return value for reading a characteristic
-          },
-        writeCharacteristicWithResponseForService:
-          async function (): Promise<Characteristic> {
-            return {} as Characteristic; // Mock return value for writing with response
-          },
-        writeCharacteristicWithoutResponseForService:
-          async function (): Promise<Characteristic> {
-            return {} as Characteristic; // Mock return value for writing without response
-          },
-        readDescriptorForService: async function (): Promise<Descriptor> {
-          return {} as Descriptor; // Mock return value for reading a descriptor
-        },
-        writeDescriptorForService: async function (): Promise<Descriptor> {
-          return {} as Descriptor; // Mock return value for writing a descriptor
-        },
-        descriptorsForService: async function (): Promise<Descriptor[]> {
-          return []; // Mock return value for descriptors
-        },
-      };
-
-      saveDevice(mockDevice);
-      Alert.alert('Device Added', `Added ${mockDevice.name}`);
-      return;
-    }
-
-    bleManager.startDeviceScan(null, null, (error, device) => {
-      if (error) {
-        Alert.alert('Error', error.message);
-        return;
-      }
-
-      if (device && device.name && !devices.some(d => d.id === device.id)) {
-        saveDevice(device);
-        bleManager.stopDeviceScan();
-        Alert.alert('Device Added', `Added ${device.name}`);
-      }
-    });
-
-    setTimeout(() => bleManager.stopDeviceScan(), 10000);
-  };
-
-  const toggleAdminMode = () => {
-    setIsAdminMode(prevState => !prevState);
-    if (!isAdminMode) {
-      console.log('Admin mode enabled');
-      // Additional logic for Admin mode can be added here
+      Alert.alert('Device Added', 'Added mock BLE device');
     } else {
-      console.log('Admin mode disabled');
-      // Additional logic for disabling Admin mode can be added here
+      bleManager.startDeviceScan(null, null, (error, device) => {
+        if (error) {
+          Alert.alert('Error', error.message);
+          return;
+        }
+
+        if (device && device.name && !devices.some(d => d.id === device.id)) {
+          connectToDevice(device);
+          bleManager.stopDeviceScan();
+        }
+      });
+
+      setTimeout(() => bleManager.stopDeviceScan(), 10000);
     }
   };
 
@@ -237,10 +120,6 @@ const SettingsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.settingItem}>
-        <Text style={styles.settingText}>Admin Mode</Text>
-        <Switch value={isAdminMode} onValueChange={toggleAdminMode} />
-      </View>
       <View style={styles.settingItem}>
         <Text style={styles.settingText}>Debug Mode</Text>
         <Switch value={isDebugMode} onValueChange={toggleDebugMode} />

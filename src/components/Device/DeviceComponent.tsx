@@ -4,16 +4,16 @@ import Icon from 'react-native-vector-icons/Feather';
 import {Device} from 'react-native-ble-plx';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {RootStackParamList} from '../navigation/RootStack';
+import {RootStackParamList} from '../../navigation/RootStack';
 
-type DeviceItemProps = {
+type DeviceProps = {
   device: Device;
   onConnect: (device: Device) => Promise<void>;
   onDisconnect: (device: Device) => Promise<void>;
-  onRemove: (deviceId: string) => void;
+  onRemove: (device: Device) => Promise<void>;
 };
 
-const DeviceItemComponent: React.FC<DeviceItemProps> = ({
+const DeviceComponent: React.FC<DeviceProps> = ({
   device,
   onConnect,
   onDisconnect,
@@ -59,7 +59,7 @@ const DeviceItemComponent: React.FC<DeviceItemProps> = ({
     }
   };
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
     Alert.alert(
       'Remove Device',
       `Are you sure you want to remove ${device.name}?`,
@@ -68,7 +68,7 @@ const DeviceItemComponent: React.FC<DeviceItemProps> = ({
         {
           text: 'Remove',
           style: 'destructive',
-          onPress: () => onRemove(device.id),
+          onPress: () => onRemove(device),
         },
       ],
     );
@@ -129,4 +129,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DeviceItemComponent;
+export default DeviceComponent;

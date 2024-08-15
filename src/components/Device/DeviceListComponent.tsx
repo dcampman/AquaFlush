@@ -1,13 +1,13 @@
 import React from 'react';
 import {FlatList} from 'react-native';
-import DeviceItemComponent from './DeviceItemComponent';
+import DeviceComponent from './DeviceComponent';
 import {Device} from 'react-native-ble-plx';
 
 type DeviceListProps = {
   devices: Device[];
   onConnect: (device: Device) => Promise<void>;
   onDisconnect: (device: Device) => Promise<void>;
-  onRemove: (deviceId: string) => void;
+  onRemove: (device: Device) => Promise<void>;
 };
 
 const DeviceListComponent: React.FC<DeviceListProps> = ({
@@ -20,7 +20,7 @@ const DeviceListComponent: React.FC<DeviceListProps> = ({
     <FlatList
       data={devices}
       renderItem={({item}) => (
-        <DeviceItemComponent
+        <DeviceComponent
           device={item}
           onConnect={onConnect}
           onDisconnect={onDisconnect}
