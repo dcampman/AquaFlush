@@ -1,0 +1,85 @@
+{
+  "sendCommands": {
+    "singleValveOn": {
+      "characteristicUUID": "12345678-1234-5678-1234-56789abcdef1",
+      "valves": [
+        {
+          "valve": 1,
+          "action": "ON",
+          "duration": 120
+        }
+      ]
+    },
+    "singleValveOff": {
+      "characteristicUUID": "12345678-1234-5678-1234-56789abcdef1",
+      "valves": [
+        {
+          "valve": 1,
+          "action": "OFF"
+        }
+      ]
+    },
+    "multipleValvesSequential": {
+      "characteristicUUID": "12345678-1234-5678-1234-56789abcdef1",
+      "valves": [
+        {
+          "valve": 1,
+          "action": "ON",
+          "duration": 120
+        },
+        {
+          "valve": 2,
+          "action": "ON",
+          "duration": 60
+        },
+        {
+          "valve": 3,
+          "action": "OFF"
+        }
+      ]
+    },
+    "updateSequence": {
+      "characteristicUUID": "12345678-1234-5678-1234-56789abcdef1",
+      "valves": [
+        {
+          "valve": 1,
+          "action": "ON",
+          "duration": 90
+        },
+        {
+          "valve": 2,
+          "action": "ON",
+          "duration": 30
+        },
+        {
+          "valve": 4,
+          "action": "ON",
+          "duration": 45
+        }
+      ]
+    }
+  },
+  "receiveData": {
+    "timerUpdates": {
+      "characteristicUUID": "42345678-1234-5678-1234-56789abcdef4",
+      "TIMERS": {
+        "1": 60,
+        "2": 30
+      }
+    },
+    "configurationData": {
+      "characteristicUUID": "22345678-1234-5678-1234-56789abcdef2",
+      "VALVES": 4,
+      "PINS": [
+        2,
+        4,
+        5,
+        16
+      ]
+    },
+    "alertMessage": {
+      "characteristicUUID": "52345678-1234-5678-1234-56789abcdef5",
+      "ALERT": "Invalid valve number in command"
+    }
+  }
+}
