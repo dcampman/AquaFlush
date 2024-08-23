@@ -1,7 +1,7 @@
-# Locate the `react_native_pods.rb` script using Ruby
-require File.join(__dir__, 'node_modules', 'react-native', 'scripts', 'react_native_pods')
+# Use the correct path to the react_native_pods.rb script
+require File.expand_path('../node_modules/react-native/scripts/react_native_pods', __dir__)
 
-platform :ios, '12.0' # Set the minimum iOS version supported by your project.
+platform :ios, '12.0' # Ensure the minimum iOS version is set correctly
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -15,7 +15,7 @@ target 'AquaFlush' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # An absolute path to your application root.
+    # Path to the root of your application
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
@@ -25,12 +25,7 @@ target 'AquaFlush' do
   end
 
   post_install do |installer|
-    # Adjust the react_native_post_install call as needed for your project.
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
-    )
+    # Post-install script to correctly link and setup React Native
+    react_native_post_install(installer)
   end
 end
