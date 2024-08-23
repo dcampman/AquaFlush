@@ -1,7 +1,7 @@
 # Use the correct path to the react_native_pods.rb script
 require File.expand_path('../node_modules/react-native/scripts/react_native_pods', __dir__)
 
-platform :ios, '12.0' # Ensure the minimum iOS version is set correctly
+platform :ios, '14.0' # Ensure the minimum iOS version is set correctly
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
